@@ -39,7 +39,7 @@ def getargs():
     return p.parse_args()
 
 args = getargs()
-subst = dict()
+subst = {}
 
 
 def trace(*args_):
@@ -75,7 +75,7 @@ def diff_to_re(match):
     if is_diff:
         # Do not run s//SOMETHING/g (with an emty pattern), that won't
         # work well...
-        if frm == []:
+        if not frm:
             trace("no from for", match.group(1))
             return
         frm = "\n".join(frm)
@@ -98,9 +98,12 @@ def update(at_file, logfile):
             # Turn "subst{frm} -> to" into a large RE.
             frm = '|'.join([re.escape(x) for x in subst])
             trace("FROM:", frm)
-            test = re.sub("(" + frm + ")",
-                          lambda m: subst[m.group(1)],
-                          test, flags=re.MULTILINE)
+            test = re.sub(
+                f"({frm})",
+                lambda m: subst[m.group(1)],
+                test,
+                flags=re.MULTILINE,
+            )
     open(at_file, 'w').write(test)
 
 
@@ -111,7 +114,7 @@ def process(logfile):
     if not m:
         trace("no diff found:", logfile)
         return
-    at_file = 'tests/' + m.group(1)
+    at_file = f'tests/{m[1]}'
     print(at_file)
     update(at_file, logfile)
 
